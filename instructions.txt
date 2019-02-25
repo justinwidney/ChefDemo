@@ -1,0 +1,230 @@
+$docker pull ubuntu:14.04
+
+$docker run -it -v $(pwd):/root/chef-repo -p 8100:80 ubuntu:14.04 /bin/bash
+$apt-get update (inside docker image)
+
+$apt-get install curl -y
+
+$curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P chef-workstation -c stable -v 0.2.41
+
+create hello.rb
+
+ADD
+----
+
+file '/tmp/motd' do
+    content 'hello world'
+end
+
+
+
+---
+
+
+$chef-client --local-mode hello.rb
+
+OUTPUT
+---------------
+
+Installing Cookbook Gems:
+Compiling Cookbooks...
+[2019-02-25T05:30:18+00:00] WARN: Node aaf656a52e2d has an empty run list.
+Converging 1 resources
+Recipe: @recipe_files::/root/chef-repo/hello.rb
+  * file[/tmp/motd] action create
+    - create new file /tmp/motd
+    - update content in file /tmp/motd from none to b94d27
+    --- /tmp/motd	2019-02-25 05:30:18.809904023 +0000
+    +++ /tmp/.chef-motd20190225-3026-pysnys	2019-02-25 05:30:18.809904023 +0000
+    @@ -1 +1,2 @@
+    +hello world
+
+Running handlers:
+Running handlers complete
+Chef Client finished, 1/1 resources updated in 00 seconds
+-----------------------------------
+
+Meaning:
+	The file /tmp/motd was created.
+
+
+
+$more /tmp/motd
+
+OUTPUT
+----
+hello world
+
+----
+
+
+
+$chef-client --local-mode hello.rb
+
+OUTPUT
+------------
+Starting Chef Client, version 14.7.17
+resolving cookbooks for run list: []
+Synchronizing Cookbooks:
+Installing Cookbook Gems:
+Compiling Cookbooks...
+[2019-02-25T05:33:21+00:00] WARN: Node aaf656a52e2d has an empty run list.
+Converging 1 resources
+Recipe: @recipe_files::/root/chef-repo/hello.rb
+  * file[/tmp/motd] action create (up to date)
+
+Running handlers:
+Running handlers complete
+Chef Client finished, 0/1 resources updated in 10 second
+
+-----------------------------------
+
+Meaning:
+	Chef looked at the current configurations state and it matches the desired state. Doesn't need to create or modify /tmp/motd
+
+
+$nano hello.rb
+
+CHANGE:
+----
+file '/tmp/motd' do
+    content 'hello chef'
+end
+----
+
+
+$chef-client --local-mode hello.rb
+
+
+
+OUTPUT
+-----------------
+Starting Chef Client, version 14.7.17
+resolving cookbooks for run list: []
+Synchronizing Cookbooks:
+Installing Cookbook Gems:
+Compiling Cookbooks...
+[2019-02-25T05:35:28+00:00] WARN: Node aaf656a52e2d has an empty run list.
+Converging 1 resources
+Recipe: @recipe_files::/root/chef-repo/hello.rb
+  * file[/tmp/motd] action create
+    - update content in file /tmp/motd from b94d27 to c38c60
+    --- /tmp/motd	2019-02-25 05:30:18.809904023 +0000
+    +++ /tmp/.chef-motd20190225-3426-ssa3f0	2019-02-25 05:35:28.246558667 +0000
+    @@ -1,2 +1,2 @@
+    -hello world
+    +hello chef
+
+Running handlers:
+Running handlers complete
+Chef Client finished, 1/1 resources updated in 00 seconds
+-------------------------
+
+
+Meaning:	
+	Chef applies the action because you changed the desired state of the file
+
+
+
+
+$nano tmp/motd
+
+
+----
+hello robot
+---
+
+$chef-client --local-mode hello.rb
+
+OUTPUT
+-------------
+Starting Chef Client, version 14.7.17
+resolving cookbooks for run list: []
+Synchronizing Cookbooks:
+Installing Cookbook Gems:
+Compiling Cookbooks...
+[2019-02-25T05:38:53+00:00] WARN: Node aaf656a52e2d has an empty run list.
+Converging 1 resources
+Recipe: @recipe_files::/root/chef-repo/hello.rb
+  * file[/tmp/motd] action create
+    - update content in file /tmp/motd from e4a0c9 to c38c60
+    --- /tmp/motd	2019-02-25 05:38:33.605271041 +0000
+    +++ /tmp/.chef-motd20190225-3628-19nvj4z	2019-02-25 05:38:53.821013528 +0000
+    @@ -1,2 +1,2 @@
+    -hello robot
+    +hello chef
+
+Running handlers:
+Running handlers complete
+Chef Client finished, 1/1 resources updated in 00 seconds
+
+------------------ 
+
+MEaning:
+	Chef returned the file to the desired state
+
+
+
+
+$rm tmp/motd
+chef-client --local-mode hello.rb
+
+Chef will recreate the file. 
+
+
+Chef Actions:
+
+content : ""
+	This adds content
+
+action :delete
+	This removes the file
+
+action :create
+	This creates a file, is also the default action
+
+action :create_if_missing
+	This creates a file, if it doesn't exist already
+
+action :nothing
+	do nothing until activated
+
+action :touch
+	Touch a file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
